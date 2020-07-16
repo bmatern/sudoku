@@ -91,7 +91,7 @@ class SudokuBoard:
                             # Not returning here because i want to check every possible puzzle.
                         else:
                             #print('Since one solution is enough I am just returning this single puzzle at recursion depth ' + str(recursionDepth) + '!')
-                            self.board=checkRecurseBoard.board
+                            #self.board=checkRecurseBoard.board
                             self.solvedBoardList = checkRecurseBoard.solvedBoardList
                             return
 

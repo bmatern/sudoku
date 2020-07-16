@@ -32,13 +32,14 @@ def testGenerateRandomBoard():
     # Print the solved board.
     if(testEmptyBoard is not None):
         print('Here is the solved board:\n' + str(testEmptyBoard))
+        print('No actually here is the solved board:\n' + str(testEmptyBoard.solvedBoardList[0]))
     else:
         print('I could not solve the board, the method returned a None.')
 
 def testBoards():
-    testSolvedBoard()
-    testInvalidBoard()
-    testIncompleteBoard()
+    #testSolvedBoard()
+    #testInvalidBoard()
+    #testIncompleteBoard()
     testHalfSolvedBoard()
 
 def testSolvedBoard():
@@ -65,16 +66,27 @@ def testHalfSolvedBoard():
     ,7,8,9,1,2,3,4,5,6
     ,2,3,4,5,6,7,8,9,1
     ,5,6,7,8,9,1,2,3,4
+    ,0,0,0,0,0,0,0,0,0
+    ,0,0,0,0,0,0,0,0,0
+    ,0,0,0,0,0,0,0,0,0
+    ,0,0,0,0,0,0,0,0,0
+    ]
+    '''halfSolvedBoard.board=[
+     1,2,3,4,5,6,7,8,9
+    ,4,5,6,7,8,9,1,2,3
+    ,7,8,9,1,2,3,4,5,6
+    ,2,3,4,5,6,7,8,9,1
+    ,5,6,7,8,9,1,2,3,4
     ,8,9,1,2,3,4,5,6,7
     ,0,0,0,0,0,0,0,1,2
     ,0,0,0,0,0,0,0,0,0
     ,0,0,0,0,0,0,0,0,0
-
     ]
+    '''
     print('This half board should be valid!:' + str(halfSolvedBoard.isValid()))
     print('This valid&Solved board should NOT be solved:' + str(halfSolvedBoard.isSolved()))
 
-    findAllPossible=True
+    findAllPossible=False
     print('Solving the half solved board, findAllPossibleSolutions=' + str(findAllPossible))
 
     halfSolvedBoard.solve(recursionDepth=1, findAllPossible=findAllPossible)
@@ -83,6 +95,7 @@ def testHalfSolvedBoard():
     #for solvedBoard in halfSolvedBoard.solvedBoardList:
     #    print(str(solvedBoard))
     print('After removing duplicates, there are ' + str(len(halfSolvedBoard.solvedBoardList)) + ' solved boards!')
+    print('This is the first solved board:\n' + str(halfSolvedBoard.solvedBoardList[0]))
 
 
 def testInvalidBoard():
@@ -138,8 +151,8 @@ if __name__=='__main__':
 
         if(task=='GENERATE_BOARD'):
 
-            #testBoards()
-            testGenerateRandomBoard()
+            testBoards()
+            #testGenerateRandomBoard()
         else:
             print('No task to perform ')
 
