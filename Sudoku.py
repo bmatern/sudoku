@@ -25,21 +25,26 @@ def testGenerateRandomBoard():
     testEmptyBoard=SudokuBoard()
     print('I have created an empty sudoku board, it looks like this:\n' + str(testEmptyBoard))
 
+    # Generate a random board
+    testEmptyBoard.generateBoard()
+    print('Generated this board:\n' + str(testEmptyBoard))
+
     # Solve the board. Just find one solution.
     print('Solving the board, looking for just one solution')
     testEmptyBoard.solve(recursionDepth=1, findAllPossible=False)
 
     # Print the solved board.
     if(testEmptyBoard is not None):
-        print('Here is the solved board:\n' + str(testEmptyBoard))
-        print('No actually here is the solved board:\n' + str(testEmptyBoard.solvedBoardList[0]))
+        print('There are ' + str(len(testEmptyBoard.solvedBoardList)) + ' solutions!')
+        #print('Here is the solved board:\n' + str(testEmptyBoard))
+        #print('No actually here is the solved board:\n' + str([0]))
     else:
         print('I could not solve the board, the method returned a None.')
 
 def testBoards():
-    #testSolvedBoard()
-    #testInvalidBoard()
-    #testIncompleteBoard()
+    testSolvedBoard()
+    testInvalidBoard()
+    testIncompleteBoard()
     testHalfSolvedBoard()
 
 def testSolvedBoard():
@@ -66,7 +71,7 @@ def testHalfSolvedBoard():
     ,7,8,9,1,2,3,4,5,6
     ,2,3,4,5,6,7,8,9,1
     ,5,6,7,8,9,1,2,3,4
-    ,0,0,0,0,0,0,0,0,0
+    ,0,0,0,0,3,4,5,6,7
     ,0,0,0,0,0,0,0,0,0
     ,0,0,0,0,0,0,0,0,0
     ,0,0,0,0,0,0,0,0,0
@@ -91,12 +96,11 @@ def testHalfSolvedBoard():
 
     halfSolvedBoard.solve(recursionDepth=1, findAllPossible=findAllPossible)
     print('I found ' + str(len(halfSolvedBoard.solvedBoardList)) + ' solved boards!')
-    halfSolvedBoard.removeDuplicateSolvedBoards()
+    #halfSolvedBoard.removeDuplicateSolvedBoards()
     #for solvedBoard in halfSolvedBoard.solvedBoardList:
     #    print(str(solvedBoard))
     print('After removing duplicates, there are ' + str(len(halfSolvedBoard.solvedBoardList)) + ' solved boards!')
     print('This is the first solved board:\n' + str(halfSolvedBoard.solvedBoardList[0]))
-
 
 def testInvalidBoard():
     invalidBoard = SudokuBoard()
@@ -151,8 +155,8 @@ if __name__=='__main__':
 
         if(task=='GENERATE_BOARD'):
 
-            testBoards()
-            #testGenerateRandomBoard()
+            #testBoards()
+            testGenerateRandomBoard()
         else:
             print('No task to perform ')
 

@@ -11,9 +11,70 @@ class SudokuBoard:
         self.board=[0]*81
         self.solvedBoardList = []
 
+    def generateBoard(self, difficulty=None):
+        # http://norvig.com/sudoku.html
+        # If a contradiction is reached, start over.
+        # If we fill at least 17 squares with at least 8 different digits then we are done.
+        # (Note: with less than 17 squares filled in or less than 8 different digits it is known that there will be duplicate solutions.
+        #successfulBoardGeneration = False
+        minimumDigitPlacement = 30
+        minimumUniqueDigits = 8
+
+        placedDigitsCount = 0
+        uniquePlacedDigits=[]
+        while(not (placedDigitsCount >= minimumDigitPlacement and len(uniquePlacedDigits) >= minimumUniqueDigits)):
+
+            # Random Position
+            positionPlacement = int(self.getRandomUnsolvedBoardPosition())
+            potentialGuesses = self.getPotentialGuesses(boardIndex=positionPlacement)
+            print('At position ' + str(positionPlacement) + ' I can possibly place these guesses:' + str(potentialGuesses))
+            '''
+            if(len(potentialGuesses) < 1):
+                print('Darnit! I cant place anything at position ' + str(positionPlacement) + '. This puzzle must be invalid:\n' + str(self))
+
+                # Start over!
+                placedDigitsCount = 0
+                uniquePlacedDigits = []
+                self.board = [0]*81
+            
+            else:
+            '''
+            currentGuess = int(list(potentialGuesses)[random.randint(0,len(potentialGuesses)-1)])
+
+            print('I will place a ' + str(currentGuess) + ' at position ' + str(positionPlacement))
+            self.board[positionPlacement] = currentGuess
+            if(self.isValid()):
+                print('This board is still valid.')
+                uniquePlacedDigits.append(currentGuess)
+                uniquePlacedDigits = list(set(uniquePlacedDigits))
+                placedDigitsCount += 1
+            else:
+                print('Darnit! Placing a ' + str(currentGuess) + ' at ' + str(positionPlacement) + 'made puzzle must be invalid, starting over:\n' + str(self))
+                placedDigitsCount = 0
+                uniquePlacedDigits = []
+                self.board = [0]*81
+
+        print('Done. I have placed ' + str(placedDigitsCount) + ' digits, ' + str(len(uniquePlacedDigits)) + ' unique.')
+
+
+
     def isValid(self):
         # Validate the board. Return False if there are any obvious (duplicate integers, outside range) problems.
         # Check Rows, Columns, and the 3x3 boxes.
+        #
+
+
+        # Another option. For each position loop and find potential values.
+        # If that's less than 1, the board is impossible.
+        for boardIndex, boardValue in enumerate(self.board):
+            if(len(self.getPotentialGuesses(boardIndex)) < 1):
+                return False
+
+            #if(boardValue==0 and len(self.getPotentialGuesses(boardIndex)) < 1):
+            #    #print('Not possible to have place anything at position ' + str(boardIndex) + ' on  board:\n' + str(self))
+            #    return False
+
+
         return (self.isRowsValid() and self.isColumnsValid() and self.isBoxesValid())
 
     def isSolved(self):
@@ -27,6 +88,8 @@ class SudokuBoard:
         #print('This board is solved!!:\n' + str(self))
         return True
 
+    '''
+    # Not necessary because I think my algorithm prevents duplicate solutions.
     def removeDuplicateSolvedBoards(self):
         # NOT working. Need to loop backwards and remove these.
         # Are there duplicates possible with my algorithm? I don't know actually, maybe it's not possible
@@ -38,71 +101,102 @@ class SudokuBoard:
                     #print('Comparing board ' + str(leftIndex) + ' with board ' + str(rightIndex))
                     if(leftSolvedBoard == rightSolvedBoard):
                         print('These two are identical!:\n' + str(leftSolvedBoard) + '\n\n' + str(rightSolvedBoard))
-
+    '''
 
     def solve(self, recursionDepth=None, findAllPossible=False):
         # Set the solved board list.
         if(recursionDepth is None):
             print('Please provide a recursion depth, or else I wont try to solve this.')
             self.solvedBoardList = []
-            return
+            return None
         elif(not self.isValid()):
             #print('This board is not valid, I cannot solve:\n' + str(self))
             self.solvedBoardList = []
-            return
-        else:
-            #print('Solving board. Recursion Depth is ' + str(recursionDepth))
-            #print(str(self))
-            if (self.isSolved()):
+            return None
+        elif (self.isSolved()):
                 #print('This board is already solved! Returning this board.')
                 self.solvedBoardList = [self]
-                return
+                return self
 
-            else:
-                # Try to solve this.
-                # Find a random unsolved position.
-                shuffledBoardIndices = list(range(81))
-                random.shuffle(shuffledBoardIndices)
-                boardIndex = -1
-                for shuffledBoardIndex in shuffledBoardIndices:
-                    if(self.board[shuffledBoardIndex] == 0):
-                        boardIndex = shuffledBoardIndex
-                        #print('Ill try to solve this board starting at position ' + str(boardIndex))
-                        break
+        else:
+            # Try to solve this.
+            print('Solving board. Recursion Depth is ' + str(recursionDepth))
+            #print(str(self))
+            boardIndex = self.getRandomUnsolvedBoardPosition()
 
-                # Loop: Assign 1-9 to this position.
-                for guessValue in range(1,10):
-                    #print('Checking if a value of ' + str(guessValue) + ' will work at position ' + str(boardIndex))
-                    checkRecurseBoard = self.copy()
-                    checkRecurseBoard.board[boardIndex] = guessValue
+            # Loop: Assign 1-9 to this position.
+            # Actually I can exclude some. Maybe this saves time, I dont have to copy the board for each guess that is impossible.
+            guessValues = self.getPotentialGuesses(boardIndex=boardIndex)
 
-                    #Try solving it
-                    #print('Puzzle is still valid, I will try solving it...')
-                    checkRecurseBoard.solve(recursionDepth=recursionDepth+1, findAllPossible=findAllPossible)
-                    if(checkRecurseBoard.solvedBoardList is None or len(checkRecurseBoard.solvedBoardList) < 1):
-                        #print('RecursedSolvedBoardList is Empty. I didnt find anything.')
-                        pass
+            for guessValue in guessValues:
+                #print('Checking if a value of ' + str(guessValue) + ' will work at position ' + str(boardIndex))
+                checkRecurseBoard = self.copy()
+                checkRecurseBoard.board[boardIndex] = guessValue
+
+                #Try solving it
+                #print('Puzzle is still valid, I will try solving it...')
+                checkRecurseBoard.solve(recursionDepth=recursionDepth+1, findAllPossible=findAllPossible)
+                if(checkRecurseBoard.solvedBoardList is None or len(checkRecurseBoard.solvedBoardList) < 1):
+                    #print('RecursedSolvedBoardList is Empty. I didnt find anything.')
+                    pass
+                else:
+                    print('Success! found ' + str(len(checkRecurseBoard.solvedBoardList)) + ' solved puzzle at recursion depth ' + str(recursionDepth) + '!')
+                    # Success, we found at least one solved puzzle.
+                    if(findAllPossible):
+                        #print('Extending the board list with a list of length ' + str(len(checkRecurseBoard.solvedBoardList)) + ' at recursion depth ' + str(recursionDepth) + '!')
+                        self.solvedBoardList.extend(checkRecurseBoard.solvedBoardList)
+                        # Not returning here because i want to check every possible puzzle.
                     else:
-                        #print('Success! found a solved puzzle at recursion depth ' + str(recursionDepth) + '!')
-                        # Success, we found at least one solved puzzle.
-                        if(findAllPossible):
-                            #print('Extending the board list with a list of length ' + str(len(checkRecurseBoard.solvedBoardList)) + ' at recursion depth ' + str(recursionDepth) + '!')
-                            self.solvedBoardList.extend(checkRecurseBoard.solvedBoardList)
-                            # Not returning here because i want to check every possible puzzle.
-                        else:
-                            #print('Since one solution is enough I am just returning this single puzzle at recursion depth ' + str(recursionDepth) + '!')
-                            #self.board=checkRecurseBoard.board
-                            self.solvedBoardList = checkRecurseBoard.solvedBoardList
-                            return
+                        #print('Since one solution is enough I am just returning this single puzzle at recursion depth ' + str(recursionDepth) + '!')
+                        self.board=checkRecurseBoard.board
+                        self.solvedBoardList = checkRecurseBoard.solvedBoardList
+                        return self
 
 
 
-                        #if(findAllPossible and len(self.solvedBoardList) > 1):
-                        #    print('I found a total of ' + str(len(self.solvedBoardList)) + ' Boards!')
-                        #    return self.solvedBoardList
+                    #if(findAllPossible and len(self.solvedBoardList) > 1):
+                    #    print('I found a total of ' + str(len(self.solvedBoardList)) + ' Boards!')
+                    #    return self.solvedBoardList
 
-                #print('I tried every number 1-9 and this puzzle is unsolvable.')
-                return
+            #print('I tried every number 1-9 and this puzzle is unsolvable.')
+            return None
+
+    def getRandomUnsolvedBoardPosition(self):
+        # Find a random unsolved position. Return a -1 if I can't find one.
+        shuffledBoardIndices = list(range(81))
+        random.shuffle(shuffledBoardIndices)
+        boardIndex = -1
+        for shuffledBoardIndex in shuffledBoardIndices:
+            if (self.board[shuffledBoardIndex] == 0):
+                boardIndex = shuffledBoardIndex
+                # print('Ill try to solve this board starting at position ' + str(boardIndex))
+                break
+        return boardIndex
+
+    def getPotentialGuesses(self, boardIndex=None):
+        # What about the value of the board at this position? I'm assuming it's 0 but there could be a guess already.
+        # I think that means I hsould delete the original value from each of these sets.
+        #print('Getting Potential Guesses for ' + str(boardIndex) + ':\n' + str(self))
+
+        originalValueSet = set([self.board[boardIndex]])
+
+
+        rowIndex = boardIndex // 9
+        rowValues = set([self.board[i] if i!=boardIndex else 0 for i in [i + rowIndex*9 for i in range(0,9)]])
+        #print('row ' + str(rowIndex) + ' contains these values:' + str(rowValues))
+
+        columnIndex = boardIndex % 9
+        columnValues = set([self.board[i] if i!=boardIndex else 0 for i in [i*9 + columnIndex for i in range(0,9)]])
+        #print('column ' + str(columnIndex) + ' contains these values:' + str(columnValues))
+
+        # Remove Box values
+        boxIndices = self.getBoxes(boardIndex=boardIndex)
+        boxValues = set([self.board[i] if i!=boardIndex else 0 for i in boxIndices])
+        #print('boardIndex ' + str(boardIndex) + ' has these box values: ' + str(boxValues))
+
+        potentialGuesses = set(range(1,10)).difference(rowValues).difference(columnValues).difference(boxValues)
+        #print('So I am left with' + str(potentialGuesses))
+        return potentialGuesses
 
     def isRowsValid(self):
         for rowIndex in range(0, 9):
@@ -130,17 +224,7 @@ class SudokuBoard:
         return True
 
     def isBoxesValid(self):
-        boxIndexList = [
-            [0,1,2,9,10,11,18,19,20]
-            ,[3,4,5,12,13,14,21,22,23]
-            ,[6,7,8,15,16,17,24,25,26]
-            ,[27,28,29,36,37,38,45,46,47]
-            ,[30,31,32,39,40,41,48,49,50]
-            ,[33,34,35,42,43,44,51,52,53]
-            ,[54,55,56,63,64,65,72,73,74]
-            ,[57,58,59,66,67,68,75,76,77]
-            ,[60,61,62,69,70,71,78,79,80]
-        ]
+        boxIndexList = self.getBoxes()
         for boxIndexList in boxIndexList:
             boxToCheck = [self.board[i] for i in boxIndexList]
             #print('Checking box' + str(boxToCheck))
@@ -149,6 +233,27 @@ class SudokuBoard:
                 return False
 
         return True
+
+    def getBoxes(self, boardIndex = None):
+        boxIndexList = [
+            [0, 1, 2, 9, 10, 11, 18, 19, 20]
+            , [3, 4, 5, 12, 13, 14, 21, 22, 23]
+            , [6, 7, 8, 15, 16, 17, 24, 25, 26]
+            , [27, 28, 29, 36, 37, 38, 45, 46, 47]
+            , [30, 31, 32, 39, 40, 41, 48, 49, 50]
+            , [33, 34, 35, 42, 43, 44, 51, 52, 53]
+            , [54, 55, 56, 63, 64, 65, 72, 73, 74]
+            , [57, 58, 59, 66, 67, 68, 75, 76, 77]
+            , [60, 61, 62, 69, 70, 71, 78, 79, 80]
+        ]
+        if boardIndex is None:
+            return boxIndexList
+        else:
+            # If a boardIndex was provided, we can provide a single box.
+            # This is the box containing the provided boardIndex.
+            for boxIndex in boxIndexList:
+                if(boardIndex in boxIndex):
+                    return boxIndex
 
     def is9merValid(self, setToCheck=None):
         #print('Checking 9mer:' + str(setToCheck))
@@ -213,4 +318,5 @@ class SudokuBoard:
         newObject = SudokuBoard()
         for index, value in enumerate(self.board):
             newObject.board[index]=value
+        newObject.solvedBoardList = self.solvedBoardList
         return newObject
