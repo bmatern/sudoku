@@ -42,10 +42,10 @@ def testGenerateRandomBoard():
         print('I could not solve the board, the method returned a None.')
 
 def testBoards():
-    testSolvedBoard()
-    testInvalidBoard()
+    #testSolvedBoard()
+    #testInvalidBoard()
     testIncompleteBoard()
-    testHalfSolvedBoard()
+    #testHalfSolvedBoard()
 
 def testSolvedBoard():
     solvedBoard = SudokuBoard()
@@ -120,28 +120,28 @@ def testInvalidBoard():
     print('This invalidBoard board should NOT be solved:' + str(invalidBoard.isSolved()))
 
     print('Solving the invalid board...')
-    invalidBoard.solve(recursionDepth=1)
+    invalidBoard.solve()
     print('The solved boards should be length zero:' + str(invalidBoard.solvedBoardList))
 
 def testIncompleteBoard():
     incompleteBoard = SudokuBoard()
     incompleteBoard.board=[
-     1,2,3,4,5,6,7,8,9
+     1,2,3,4,5,6,7,8,0
     ,4,5,6,7,8,9,1,2,3
     ,7,8,9,1,2,3,4,5,6
     ,2,3,4,5,0,7,8,9,1
     ,5,6,7,8,9,1,2,3,4
-    ,8,9,1,2,3,4,5,6,7
-    ,3,4,5,6,7,8,9,1,2
+    ,8,9,1,2,3,4,5,6,0
+    ,3,4,5,6,7,8,0,1,2
     ,6,7,8,9,1,2,3,4,5
-    ,9,1,2,3,4,5,6,7,0
+    ,0,1,2,3,4,5,6,0,0
     ]
 
     print('This incompleteBoard board should be valid!:' + str(incompleteBoard.isValid()))
     print('This incompleteBoard board should NOT be solved:' + str(incompleteBoard.isSolved()))
 
     print('Solving the incomplete board....')
-    incompleteBoard.solve(recursionDepth=1)
+    incompleteBoard.solve()
     print('The solved boards should be one:' + str(len(incompleteBoard.solvedBoardList)))
 
 
@@ -155,8 +155,8 @@ if __name__=='__main__':
 
         if(task=='GENERATE_BOARD'):
 
-            #testBoards()
-            testGenerateRandomBoard()
+            testBoards()
+            #testGenerateRandomBoard()
         else:
             print('No task to perform ')
 

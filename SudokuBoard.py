@@ -1,15 +1,22 @@
+import copy
 import random
 
 
 class SudokuBoard:
     # It's just an array of integers. Length 81.
     board=[]
+    # Useful when Solving. Keep track of the original, unchanged board.
+    originalBoard=[]
+    # A list of SudokuBoard objects that are valid and solved.
     solvedBoardList=[]
+    # List of sets. Length 81. Each set are potential options at each position.
+    potentialOptions=[]
 
     def __init__(self):
         # Initialize the board with zeros.
         self.board=[0]*81
         self.solvedBoardList = []
+        self.potentialOptions = [set()] * 81
 
     def generateBoard(self, difficulty=None):
         # http://norvig.com/sudoku.html
@@ -88,6 +95,62 @@ class SudokuBoard:
         #print('This board is solved!!:\n' + str(self))
         return True
 
+    def solve(self, findAllPossible=False):
+        print('Solving Board:\n' + str(self))
+        self.originalBoard = copy.deepcopy(self.board)
+        print('Original Board = ' + str(self.originalBoard))
+        if (not self.isValid()):
+            print('This board is not valid, I cannot solve:\n' + str(self))
+            return None
+        elif (self.isSolved()):
+            print('This board is already solved! Returning this board.')
+            self.solvedBoardList.append(self.board)
+            return self
+
+        else:
+            print('I will attempt to solve...')
+
+            # Calculate Possibilities for each position
+            for currentPositionIndex in range(0,81):
+                #print('Checking position ' + str( currentPositionIndex))
+                self.potentialOptions[currentPositionIndex] = self.getPotentialGuesses(boardIndex=currentPositionIndex)
+
+            currentPositionIndex=0
+            # Loop All position indices
+            while(currentPositionIndex <= 80 and currentPositionIndex >= 0):
+                print('At position ' + str(currentPositionIndex) + ' there are these options:' + str(self.potentialOptions[currentPositionIndex]))
+
+                # Loop Possibilities
+                for possibleValue in sorted(list(self.potentialOptions[currentPositionIndex])):
+                    print('Guessing ' + str(possibleValue) + ' at position ' + str(currentPositionIndex))
+                    self.board[currentPositionIndex] = possibleValue
+
+                    if(not self.isValid()):
+                        print(str(possibleValue) + ' at position ' + str(currentPositionIndex) + ' did not work.')
+                        self.board[currentPositionIndex] = 0
+                        continue
+
+                    elif(self.isSolved()):
+                        print('I found a solved board:\n' + str(self))
+                        self.solvedBoardList.append(self.board)
+                        if(findAllPossible):
+                            print('I will continue and see if there are more solutions.')
+                        else:
+                            print('All done.')
+                            currentPositionIndex=-1
+                            break
+
+                    #else:
+                        # If it's valid then maybe I can increment the position and continue.
+
+
+                    # If Solved, add to solvedBoardList
+                    # If valid
+                    # If Invalid pass
+
+                currentPositionIndex += 1
+
+
     '''
     # Not necessary because I think my algorithm prevents duplicate solutions.
     def removeDuplicateSolvedBoards(self):
@@ -102,7 +165,7 @@ class SudokuBoard:
                     if(leftSolvedBoard == rightSolvedBoard):
                         print('These two are identical!:\n' + str(leftSolvedBoard) + '\n\n' + str(rightSolvedBoard))
     '''
-
+    '''
     def solve(self, recursionDepth=None, findAllPossible=False):
         # Set the solved board list.
         if(recursionDepth is None):
@@ -172,14 +235,13 @@ class SudokuBoard:
                 # print('Ill try to solve this board starting at position ' + str(boardIndex))
                 break
         return boardIndex
+        
+    '''
 
     def getPotentialGuesses(self, boardIndex=None):
-        # What about the value of the board at this position? I'm assuming it's 0 but there could be a guess already.
-        # I think that means I hsould delete the original value from each of these sets.
-        #print('Getting Potential Guesses for ' + str(boardIndex) + ':\n' + str(self))
 
-        originalValueSet = set([self.board[boardIndex]])
-
+        if (self.board[boardIndex] != 0):
+            return {self.board[boardIndex]}
 
         rowIndex = boardIndex // 9
         rowValues = set([self.board[i] if i!=boardIndex else 0 for i in [i + rowIndex*9 for i in range(0,9)]])
@@ -314,9 +376,11 @@ class SudokuBoard:
         boardToString = boardToString[0:len(boardToString)-1]
         return boardToString
 
+    '''
     def copy(self):
         newObject = SudokuBoard()
         for index, value in enumerate(self.board):
             newObject.board[index]=value
         newObject.solvedBoardList = self.solvedBoardList
         return newObject
+    '''
